@@ -19,24 +19,56 @@ public class ProductService {
     }
 
     public Product createProduct(Product product) {
-        ProductEntity entity = new ProductEntity(null, product.name(), product.price());
+        ProductEntity entity = new ProductEntity(
+                null,
+                product.name(),
+                product.price(),
+                product.description(),
+                product.stockQuantity(),
+                product.category()
+        );
+
         ProductEntity savedEntity = repository.save(entity);
-        return new Product(savedEntity.getId(), savedEntity.getName(), savedEntity.getPrice());
+        return new Product(
+                        savedEntity.getId(),
+                        savedEntity.getName(),
+                        savedEntity.getDescription(),
+                        savedEntity.getPrice(),
+                savedEntity.getStockQuantity(),
+                savedEntity.getCategory()
+                );
     }
 
     public Product getProductById(Long id) {
         ProductEntity entity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        return new Product(entity.getId(), entity.getName(), entity.getPrice());
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+        return new Product(
+                entity.getId(),
+                entity.getName(),
+                entity.getDescription(),
+                entity.getPrice(),
+                entity.getStockQuantity(),
+                entity.getCategory()
+        );
     }
 
     public List<Product> getAllProducts() {
         return repository.findAll().stream()
-                .map(entity -> new Product(entity.getId(), entity.getName(), entity.getPrice()))
+                .map(entity -> new Product(
+                        entity.getId(),
+                        entity.getName(),
+                        entity.getDescription(),
+                        entity.getPrice(),
+                        entity.getStockQuantity(),
+                        entity.getCategory()
+                ))
                 .collect(Collectors.toList());
     }
 
     public void deleteProduct(Long id) {
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Produto com o ID" + id + " não existe");
+        }
         repository.deleteById(id);
     }
 
@@ -44,17 +76,27 @@ public class ProductService {
     public Product updateProduct(Long id, Product updatedProduct) {
         // Verificar se o produto existe
         ProductEntity existingEntity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product with ID " + id + " not found"));
+                .orElseThrow(() -> new RuntimeException("Produto com o ID " + id + " não encontrado"));
 
         // Atualizar os dados do produto
         existingEntity.setName(updatedProduct.name());
+        existingEntity.setDescription(updatedProduct.description());
         existingEntity.setPrice(updatedProduct.price());
+        existingEntity.setStockQuantity(updatedProduct.stockQuantity());
+        existingEntity.setCategory(updatedProduct.category());
 
         // Salvar as alterações no banco de dados
         ProductEntity savedEntity = repository.save(existingEntity);
 
         // Retornar o produto atualizado
-        return new Product(savedEntity.getId(), savedEntity.getName(), savedEntity.getPrice());
+        return new Product(
+                savedEntity.getId(),
+                savedEntity.getName(),
+                savedEntity.getDescription(),
+                savedEntity.getPrice(),
+                savedEntity.getStockQuantity(),
+                savedEntity.getCategory()
+        );
     }
 
     // Buscar produtos pelo nome
@@ -70,7 +112,13 @@ public class ProductService {
             System.out.println("Produtos encontrados com o nome '" + name + "': " + entities.size());
         }
         return entities.stream()
-                .map(entity -> new Product(entity.getId(), entity.getName(), entity.getPrice()))
+                .map(entity -> new Product(
+                        entity.getId(), entity.getName(),
+                        entity.getDescription(),
+                        entity.getPrice(),
+                        entity.getStockQuantity(),
+                        entity.getCategory()
+                ))
                 .collect(Collectors.toList());
     }
 }
